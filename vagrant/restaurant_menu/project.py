@@ -37,11 +37,13 @@ def editMenuItem(restaurant_id, menu_id):
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
     editedItem = session.query(MenuItem).filter_by(id=menu_id).one()
+    oldItem = editedItem.name
     if request.method == 'POST':
         if request.form['name']:
             editedItem.name = request.form['name']
         session.add(editedItem)
         session.commit()
+        flash("Editted menu item \'%s\' to \'%s\'"%(oldItem, editedItem.name))
         return redirect(url_for('restaurantMenu', restaurant_id=restaurant_id))
     else:
         return render_template('editmenuitem.html', restaurant_id=restaurant_id, menu_id=menu_id, item=editedItem)
@@ -54,6 +56,7 @@ def deleteMenuItem(restaurant_id, menu_id):
     if request.method == 'POST':
         session.delete(deleteItem)
         session.commit()
+        flash("Deleted menu item \'%s\'"%(deleteItem.name))
         return redirect(url_for('restaurantMenu', restaurant_id=restaurant_id))
     else:
         return render_template('deletemenuitem.html', item=deleteItem)
