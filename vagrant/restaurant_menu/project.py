@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template, request, redirect, url_for
 app = Flask(__name__)
 
 #sqlalchemy database access
@@ -17,18 +17,18 @@ def restaurantMenu(restaurant_id):
     session = DBSession()
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
     items = session.query(MenuItem).filter_by(restaurant_id = restaurant.id)
-    output = '<h1>Menu for %s</h1>'%(restaurant.name)
-    for item in items:
-        output += "%s<br>"%(item.name)
-        output += "%s<br>"%(item.description)
-        output += "%s<br>"%(item.price)
-        output += "<br>"
-    
-    return output
+    return render_template('menu.html', restaurant=restaurant, items=items)
 
-@app.route('/restaurants/<int:restaurant_id>/new/')
+@app.route('/restaurants/<int:restaurant_id>/new/', methods=['GET','POST'])
 def newMenuItem(restaurant_id):
-    return "page to create a new menu item. Task 1 complete!"
+    if request.method == 'POST':
+        newItem = MenuItem(name=request.form['name'], restaurant_id = restaurant_id)
+        session.add(newItem)
+        session.commit()
+        return redirect(url_for('restaurantMenu', restaurant_id=restaurant_id))
+    else:
+        return render_template('newmenuitem.html', restaurant_id=restaurant_id)
+
 
 # Task 2: Create route for editMenuItem function here
 
